@@ -42,6 +42,21 @@
     4: 'Torso · Pierna (x2)', 5: 'PPL + Torso · Pierna'
   };
 
+  // Familias musculares afines: para poder añadir un grupo enfatizado a un día compatible
+  var FAMILIES = {
+    pecho: ['pecho', 'hombros', 'triceps'],
+    espalda: ['espalda', 'biceps'],
+    cuadriceps: ['cuadriceps', 'gluteos', 'isquios'],
+    isquios: ['isquios', 'gluteos', 'cuadriceps'],
+    gluteos: ['gluteos', 'isquios', 'cuadriceps'],
+    hombros: ['hombros', 'pecho', 'triceps'],
+    biceps: ['biceps', 'espalda'],
+    triceps: ['triceps', 'pecho', 'hombros'],
+    core: ['core', 'pecho', 'espalda', 'cuadriceps'],
+    gemelos: ['gemelos', 'cuadriceps', 'isquios'],
+    antebrazo: ['antebrazo', 'biceps']
+  };
+
   var PRIORITY = ['cuadriceps', 'espalda', 'pecho', 'gluteos', 'isquios', 'hombros', 'biceps', 'triceps', 'core', 'gemelos', 'antebrazo'];
 
   function rnd(n) { return Math.floor(Math.random() * n); }
@@ -84,12 +99,34 @@
     var level = clamp(opts.level || 2, 1, 3);
     var profile = opts.profile || 'completo';
     var duration = clamp(opts.duration || 45, 20, 120);
+    var emphasis = (opts.emphasis || []).slice();
+    var emphasisLevel = clamp(opts.emphasisLevel || 2, 1, 3);
+    var emphasisSet = {};
+    emphasis.forEach(function (g) { emphasisSet[g] = true; });
     var allowed = allowedEquip(profile);
 
     var split = SPLITS[days];
     var usedWeek = {};   // exId -> true (variedad semanal)
     var plan = split.map(function (d) {
       return { name: d.name, focus: d.focus.slice(), exercises: [] };
+    });
+
+    // Añade los grupos enfatizados a los días compatibles (para no descuidarlos ni
+    // dejarlos sin entrenar). Un grupo solo se añade si no está ya en ese día.
+    emphasis.forEach(function (g) {
+      if (!DB.byGroup[g] || !DB.byGroup[g].length) return;
+      // si el grupo ya aparece en algún día, no hace falta añadirlo a más
+      var present = plan.some(function (d) { return d.focus.indexOf(g) >= 0; });
+      if (present) return;
+      // busca el día con más solapamiento de familia
+      var fam = FAMILIES[g] || [g];
+      var best = -1, bestScore = -1;
+      plan.forEach(function (d, i) {
+        var sc = d.focus.filter(function (x) { return fam.indexOf(x) >= 0; }).length;
+        if (sc > bestScore) { bestScore = sc; best = i; }
+      });
+      if (best < 0) best = 0;
+      plan[best].focus.push(g);
     });
 
     // nº de ejercicios que caben en el tiempo disponible
@@ -102,15 +139,21 @@
       // 1 ejercicio por grupo, en orden de prioridad
       focus.forEach(function (g) { slots.push({ g: g, order: 0 }); });
 
-      // extras: reparto equilibrado en los grupos grandes
-      var extraOrder = PRIORITY.filter(function (g) { return focus.indexOf(g) >= 0; });
+      // extras: los grupos enfatizados primero, luego el resto por prioridad
+      var extraOrder = [];
+      emphasis.forEach(function (g) { if (focus.indexOf(g) >= 0 && extraOrder.indexOf(g) < 0) extraOrder.push(g); });
+      PRIORITY.forEach(function (g) { if (focus.indexOf(g) >= 0 && extraOrder.indexOf(g) < 0) extraOrder.push(g); });
+
       var guard = 0;
-      while (slots.length < maxEx && guard++ < 40) {
+      while (slots.length < maxEx && guard++ < 60) {
         var added = false;
         for (var i = 0; i < extraOrder.length && slots.length < maxEx; i++) {
           var g = extraOrder[i];
           var count = slots.filter(function (s) { return s.g === g; }).length;
-          var cap = (g === 'core' || g === 'gemelos' || g === 'antebrazo') ? 1 : 3;
+          var isEmph = !!emphasisSet[g];
+          var cap;
+          if (g === 'core' || g === 'gemelos' || g === 'antebrazo') cap = isEmph ? 3 : (g === 'core' ? 2 : 1);
+          else cap = isEmph ? 4 : 3;
           if (count > 0 && count < cap) { slots.push({ g: g, order: count }); added = true; break; }
         }
         if (!added) break;
@@ -166,6 +209,20 @@
         return a + exerciseSeconds(DB.byId[e.exId] || { rest: 90, r: '10' }, e.sets);
       }, 0);
 
+      // si sobra tiempo, los compuestos de grupos enfatizados ganan una serie (más estímulo)
+      day.exercises.forEach(function (e, idx) {
+        var ex = DB.byId[e.exId];
+        if (!ex || ex.t !== 'c') return;
+        if (!emphasisSet[ex.g]) return;
+        if (idx > 1) return; // solo los dos primeros ejercicios del grupo
+        if (e.sets >= 5) return;
+        var cost = exerciseSeconds(ex, 1);
+        if (total + cost <= budget - 45) {
+          e.sets += 1;
+          total += cost;
+        }
+      });
+
       // si sobra tiempo, el primer compuesto gana una serie (más estímulo)
       var first = day.exercises[0];
       if (first && total + (exerciseSeconds(DB.byId[first.exId] || { rest: 120 }, 1)) <= budget - 60) {
@@ -220,6 +277,8 @@
       meta: {
         days: days, level: level, profile: profile, duration: duration,
         split: SPLIT_LABEL[days],
+        emphasis: emphasis,
+        emphasisLevel: emphasisLevel,
         volume: weekly
       },
       days: plan.map(function (d, i) {
@@ -246,13 +305,16 @@
         (ex.sec || []).forEach(function (g) { weekly[g] = (weekly[g] || 0) + e.sets * 0.5; });
       });
     });
+    var emph = (routine.meta && routine.meta.emphasis) || [];
+    var emphSet = {};
+    emph.forEach(function (g) { emphSet[g] = true; });
     var out = [];
     DB.groups.forEach(function (g) {
       var n = Math.round(weekly[g.id] || 0);
       if (!n) return;
       var target = DB.volumeTarget[g.id] || 8;
       var status = n < target * 0.6 ? 'bajo' : (n > target * 1.8 ? 'alto' : 'ok');
-      out.push({ group: g, sets: n, target: target, status: status });
+      out.push({ group: g, sets: n, target: target, status: status, emphasized: !!emphSet[g.id] });
     });
     out.sort(function (a, b) { return b.sets - a.sets; });
     return out;

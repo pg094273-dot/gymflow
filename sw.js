@@ -1,5 +1,5 @@
 /* GYMFLOW — service worker: app offline */
-var CACHE = 'gymflow-v1';
+var CACHE = 'gymflow-v3';
 var FILES = [
   './',
   './index.html',

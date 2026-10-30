@@ -276,7 +276,7 @@
     return '<div class="card" style="background:linear-gradient(160deg, rgba(198,242,78,.14), rgba(20,27,36,1) 60%);border-color:rgba(198,242,78,.3)">' +
       '<div class="tiny" style="letter-spacing:.12em;text-transform:uppercase;color:var(--accent);font-weight:700">Bienvenido</div>' +
       '<h2 style="font-size:25px;margin-top:6px;line-height:1.15">Tu entrenamiento,<br>organizado y equilibrado</h2>' +
-      '<p class="small muted" style="margin-top:10px">Elige cuántos días entrenas y la app crea una rutina equilibrada para 45 minutos, con ejercicios de gimnasio clasificados por músculo.</p>' +
+      '<p class="small muted" style="margin-top:10px">Elige cuántos días entrenas y la app crea una rutina equilibrada para 45 minutos, con ejercicios de gimnasio clasificados por músculo. Puedes indicar grupos musculares en los que quieres incidir más.</p>' +
       '<button class="btn primary block" style="margin-top:16px" data-act="gen">Generar mi rutina</button>' +
       '<button class="btn block ghost" style="margin-top:10px" data-act="new-routine">Crear rutina manualmente</button>' +
       '</div>' +
@@ -358,7 +358,8 @@
     var balanceHTML = balance.map(function (b) {
       var pct = Math.round(b.sets / maxSets * 100);
       var col = b.status === 'ok' ? '#c6f24e' : (b.status === 'bajo' ? '#f5c26b' : '#ff8f6b');
-      return '<div class="vol-row"><div class="g">' + esc(b.group.short) + '</div>' +
+      var label = esc(b.group.short) + (b.emphasized ? ' ★' : '');
+      return '<div class="vol-row"><div class="g">' + label + '</div>' +
         '<div class="track"><div class="fill" style="width:' + pct + '%;background:' + col + '"></div></div>' +
         '<div class="n">' + b.sets + ' ser.</div></div>';
     }).join('');
@@ -374,6 +375,7 @@
           '<div class="k"><b>' + totalEx + '</b> ejercicios</div>' +
           (r.meta && r.meta.split ? '<div class="k">' + esc(r.meta.split) + '</div>' : '') +
           (r.meta && r.meta.duration ? '<div class="k"><b>' + r.meta.duration + '</b> min/día</div>' : '') +
+          (r.meta && r.meta.emphasis && r.meta.emphasis.length ? '<div class="k">★ Incide en: ' + r.meta.emphasis.map(function (g) { var gg = DB.groupById(g); return gg ? esc(gg.short) : g; }).join(', ') + '</div>' : '') +
         '</div>' +
         '<div class="btn-row" style="margin-top:14px">' +
           (isActive ? '' : '<button class="btn primary" data-act="activate" data-id="' + r.id + '">Activar</button>') +
@@ -725,7 +727,12 @@
             '<button class="tiny" style="color:var(--danger);padding:4px" data-act="del-ex" data-d="' + di + '" data-e="' + ei + '" aria-label="Quitar">✕</button>' +
           '</div>';
         }).join('') : '<p class="tiny muted" style="padding:10px 0">Sin ejercicios todavía.</p>') + '</div>' +
-        '<button class="btn sm block ghost" style="margin-top:8px" data-act="add-ex" data-d="' + di + '">+ Añadir ejercicio</button>' +
+        '<div class="tiny muted" style="margin-top:10px;margin-bottom:4px">Sugerir por grupo:</div>' +
+        '<div class="chips" style="margin-bottom:8px">' + DB.groups.map(function (g) {
+          return '<button class="chip" data-act="suggest-ex" data-d="' + di + '" data-g="' + g.id + '" style="font-size:12px;height:30px">' +
+            '<span class="dot" style="color:' + g.color + '"></span>' + esc(g.short) + '</button>';
+        }).join('') + '</div>' +
+        '<button class="btn sm block ghost" data-act="add-ex" data-d="' + di + '">+ Añadir ejercicio</button>' +
       '</div>';
     }).join('');
 
@@ -805,6 +812,13 @@
         [[1, 'Principiante'], [2, 'Intermedio'], [3, 'Avanzado']].map(function (l) { return '<button data-v="' + l[0] + '" class="' + (st.level === l[0] ? 'on' : '') + '">' + l[1] + '</button>'; }).join('') + '</div></div>' +
       '<div class="field"><div class="lbl">Equipamiento</div><select id="gen-profile" class="select">' +
         DB.profiles.map(function (p) { return '<option value="' + p.id + '"' + (st.profile === p.id ? ' selected' : '') + '>' + esc(p.name) + '</option>'; }).join('') + '</select></div>' +
+      '<div class="field"><div class="lbl">¿Quieres incidir en algún grupo? (varios)</div>' +
+        '<div class="chips" id="gen-emph" style="flex-wrap:wrap">' + DB.groups.map(function (g) {
+          return '<button type="button" class="chip" data-emph="' + g.id + '"><span class="dot" style="color:' + g.color + '"></span>' + esc(g.short) + '</button>';
+        }).join('') + '</div>' +
+        '<p class="tiny muted" style="margin-top:6px">Se le dará más volumen y series sin descuidar el resto.</p></div>' +
+      '<div class="field"><div class="lbl">Intensidad del énfasis</div><div class="seg" id="gen-emph-level">' +
+        [[1, 'Ligero'], [2, 'Medio'], [3, 'Fuerte']].map(function (l) { return '<button data-v="' + l[0] + '" class="' + (l[0] === 2 ? 'on' : '') + '">' + l[1] + '</button>'; }).join('') + '</div></div>' +
       '<button class="btn primary block" style="margin-top:20px" data-act="do-generate">Generar rutina</button>' +
       '<p class="tiny muted center" style="margin-top:10px">Podrás editarla después ejercicio a ejercicio.</p>' +
       '</div>';
@@ -818,6 +832,8 @@
         $$('button', seg).forEach(function (x) { x.classList.remove('on'); });
         b.classList.add('on');
       }
+       var c = e.target.closest('[data-emph]');
+       if (c) { c.classList.toggle('on'); }
     });
   }
 
@@ -825,9 +841,11 @@
     var days = Number($('#gen-days .on').dataset.v);
     var duration = Number($('#gen-dur .on').dataset.v);
     var level = Number($('#gen-level .on').dataset.v);
+    var emphLevel = Number($('#gen-emph-level .on').dataset.v) || 2;
     var profile = $('#gen-profile').value;
+    var emphasis = $$('#gen-emph .chip.on').map(function (c) { return c.dataset.emph; });
     S.updateSettings({ days: days, duration: duration, level: level, profile: profile });
-    var routine = Generator.generate({ days: days, duration: duration, level: level, profile: profile });
+    var routine = Generator.generate({ days: days, duration: duration, level: level, profile: profile, emphasis: emphasis, emphasisLevel: emphLevel });
     S.addRoutine(routine);
     S.setActive(routine.id);
     closeSheet();
@@ -1140,6 +1158,25 @@
       return;
     }
     if (act === 'add-ex') { openPicker(Number(el.dataset.d)); return; }
+    if (act === 'suggest-ex') {
+      var dIdx = Number(el.dataset.d);
+      var grp = el.dataset.g;
+      var day = ui.editor.days[dIdx];
+      var used = {};
+      day.exercises.forEach(function (e) { used[e.exId] = true; });
+      var cands = (DB.byGroup[grp] || []).filter(function (ex) { return !used[ex.id]; });
+      // prefer compound if none of that type yet in the day for this group
+      var hasCompound = day.exercises.some(function (e) { var x = DB.byId[e.exId]; return x && x.g === grp && x.t === 'c'; });
+      var pool = hasCompound ? cands.filter(function (x) { return x.t !== 'c'; }) : cands.filter(function (x) { return x.t === 'c'; });
+      if (!pool.length) pool = cands;
+      if (!pool.length) { toast('Ya tienes todos los ejercicios de ' + (DB.groupById(grp) || {}).short); return; }
+      // pick one with least used pattern, random tie-break
+      var best = pool[Math.floor(Math.random() * pool.length)];
+      day.exercises.push({ exId: best.id, sets: 3, reps: best.r, rest: best.rest, note: '' });
+      render();
+      toast(best.n + ' añadido');
+      return;
+    }
     if (act === 'del-ex') {
       var d1 = Number(el.dataset.d), e1 = Number(el.dataset.e);
       ui.editor.days[d1].exercises.splice(e1, 1);

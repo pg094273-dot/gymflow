@@ -8,6 +8,8 @@ sin conexión una vez instalada, y se puede imprimir/exportar a PDF en tamaño A
 
 - **122 ejercicios** clasificados por 11 grupos musculares, con dibujo de ejecución, técnica, errores habituales y repeticiones recomendadas.
 - **Generación automática de rutinas** según los días disponibles (1-5), tiempo por sesión (30/45/60/90 min), nivel y equipamiento disponible. El reparto de volumen es equilibrado (10-20 series por grupo a la semana) y respeta el tiempo real de cada serie.
+- **Énfasis por grupo muscular**: puedes marcar uno o varios grupos en los que quieres incidir más (pecho, hombros, etc.). La rutina aumenta su volumen y series sin descuidar el resto, y lo muestra con ★ en el informe de volumen.
+- **Sugerencias en el editor manual**: al crear tu propia rutina, pulsa un grupo muscular para añadir automáticamente un ejercicio sugerido (compuesto primero, luego aislado).
 - **Creación manual de rutinas**: días, ejercicios, series, repeticiones y descanso editables.
 - **Registro de entrenamientos**: pesos, repeticiones y notas por serie, con temporizador de descanso.
 - **Progreso**: volumen por semana, series por grupo frente al objetivo, récords personales, historial y peso corporal.
