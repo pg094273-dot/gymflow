@@ -2,6 +2,7 @@
   "name": "gymflow",
   "version": "1.0.0",
   "description": "GYMFLOW - Planificador de entrenamientos de musculacion (PWA empaquetada con Capacitor)",
+  "type": "module",
   "private": true,
   "scripts": {
     "dev": "vite --host 0.0.0.0 --port 3000",

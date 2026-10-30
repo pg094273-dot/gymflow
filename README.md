@@ -39,6 +39,17 @@ css/
 # Iniciar servidor de desarrollo en puerto 3000
 npm run dev
 
-# Compilar para producción
+# Compilar para producción (genera la carpeta dist/)
 npm run build
 ```
+
+## Publicación en GitHub Pages (Solución a pantalla en blanco)
+
+Para que el enlace de GitHub Pages funcione y no se quede en blanco:
+
+1. Ve a tu repositorio en GitHub y haz clic en la pestaña **Settings** (Ajustes).
+2. En el menú lateral izquierdo, haz clic en **Pages**.
+3. En la sección **Build and deployment**:
+   - En **Source**, selecciona **GitHub Actions**.
+4. ¡Listo! Al hacer push al repositorio en la rama `main`, la GitHub Action `.github/workflows/deploy.yml` compilará automáticamente los archivos TypeScript con Vite usando rutas relativas (`./assets/`) y publicará el sitio web en funcionamiento.
+
