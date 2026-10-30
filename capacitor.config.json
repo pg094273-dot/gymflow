@@ -1,0 +1,9 @@
+{
+  "appId": "com.gymflow.app",
+  "appName": "GYMFLOW",
+  "webDir": "www",
+  "bundledWebRuntime": false,
+  "server": {
+    "androidScheme": "https"
+  }
+}
