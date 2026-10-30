@@ -1,63 +1,44 @@
-# GYMFLOW — Planificador de entrenamientos de musculación
+# GYMFLOW — Planificador de entrenamientos de musculación (React + TypeScript)
 
-Aplicación web progresiva (PWA) para organizar entrenamientos de musculación en el gimnasio.
-Funciona en iPhone (Safari → Añadir a pantalla de inicio) y Android (Chrome → Instalar app),
-sin conexión una vez instalada, y se puede imprimir/exportar a PDF en tamaño A4.
+Aplicación web React + TypeScript construida con Vite para organizar y registrar entrenamientos de musculación en el gimnasio.
+Diseñada para dispositivos móviles y escritorio, con persistencia local, ilustraciones vectoriales de ejecución de ejercicios, temporizador de descanso interactivo y exportación a PDF en tamaño A4 lista para imprimir.
 
-## Funcionalidades
+## Funcionalidades principales
 
-- **122 ejercicios** clasificados por 11 grupos musculares, con dibujo de ejecución, técnica, errores habituales y repeticiones recomendadas.
-- **Generación automática de rutinas** según los días disponibles (1-5), tiempo por sesión (30/45/60/90 min), nivel y equipamiento disponible. El reparto de volumen es equilibrado (10-20 series por grupo a la semana) y respeta el tiempo real de cada serie.
-- **Énfasis por grupo muscular**: puedes marcar uno o varios grupos en los que quieres incidir más (pecho, hombros, etc.). La rutina aumenta su volumen y series sin descuidar el resto, y lo muestra con ★ en el informe de volumen.
-- **Sugerencias en el editor manual**: al crear tu propia rutina, pulsa un grupo muscular para añadir automáticamente un ejercicio sugerido (compuesto primero, luego aislado).
-- **Creación manual de rutinas**: días, ejercicios, series, repeticiones y descanso editables.
-- **Registro de entrenamientos**: pesos, repeticiones y notas por serie, con temporizador de descanso.
-- **Progreso**: volumen por semana, series por grupo frente al objetivo, récords personales, historial y peso corporal.
-- **Exportación a PDF A4** con una hoja por día y espacio para anotar pesos.
-- **Ajustes**: unidades (kg/lb), nivel, equipamiento, días, tiempo, descanso automático. Copia de seguridad (JSON) e importación.
+- **Base de datos completa de ejercicios**: clasificados por 11 grupos musculares (pecho, espalda, hombros, bíceps, tríceps, antebrazo, cuádriceps, isquios, glúteos, gemelos, core), con animaciones e ilustraciones vectoriales SVG, pautas de ejecución, errores habituales y repeticiones recomendadas.
+- **Generación automática de rutinas equilibradas**: optimizadas por días (1-5), tiempo por sesión (30/45/60/90 min), nivel y equipamiento disponible (gimnasio completo, peso libre y poleas, mancuernas y banco, solo peso corporal). Distribución de volumen semanal (10-20 series por grupo) respetando descansos y tiempos reales.
+- **Énfasis muscular personalizable**: añade énfasis a grupos musculares objetivo con diferentes intensidades (ligero, medio, fuerte).
+- **Editor manual de rutinas**: personalización total de días, ejercicios, series, repeticiones y descansos, con reordenación y sugerencias inteligentes por grupo muscular.
+- **Registro de sesiones en vivo**: seguimiento de series con pesos y repeticiones, marcas de completado, temporizador de descanso automático con señal sonora (beep) y notas de sesión.
+- **Panel de progreso y analíticas**: gráfico de volumen semanal levantado (en kg o lb), control de series semanales frente a objetivos por grupo muscular, récords personales (PRs), evolución del peso corporal e historial de entrenamientos.
+- **Exportación a PDF A4**: generación de hojas imprimibles con portada, reparto de volumen semanal y hojas de registro diario con espacio para apuntar series y pesos.
+- **Ajustes y copia de seguridad**: selección de unidades (kg/lb), nivel, días de entrenamiento, importación/exportación de copias en JSON y borrado seguro de datos.
 
-## Estructura
+## Estructura del proyecto
 
 ```
-index.html
-manifest.webmanifest
-sw.js
-css/styles.css
-js/figures.js      # ilustraciones vectoriales de ejecución
-js/data.js         # base de datos de ejercicios
-js/store.js        # persistencia (localStorage)
-js/generator.js    # generador de rutinas equilibradas
-js/app.js          # interfaz y lógica
-icons/             # iconos PWA
+src/
+├── components/          # Componentes reutilizables (Topbar, Tabbar, RestBar, ExerciseSheet, Modals, PrintArea, Figure)
+├── context/             # StoreContext para estado reactivo y persistencia en localStorage
+├── data/
+│   ├── exercises.ts     # Base de datos tipada de ejercicios, grupos musculares y perfiles
+│   └── figures.ts       # Generador vectorial de poses y figuras animadas de ejercicios
+├── services/
+│   └── generator.ts     # Algoritmo de generación y balance de volumen de rutinas
+├── views/               # Vistas principales (Hoy, Rutinas, Detalle, Ejercicios, Progreso, Ajustes, Sesión, Editor)
+├── types.ts             # Tipos e interfaces TypeScript
+├── App.tsx              # Componente raíz con enrutamiento por hash
+└── main.tsx             # Punto de entrada de React
+css/
+└── styles.css           # Estilos visuales de la aplicación
 ```
 
-## Uso en local
-
-Sirve la carpeta con cualquier servidor estático (el service worker requiere HTTPS o localhost):
+## Desarrollo
 
 ```bash
-python3 -m http.server 8000
-# abre http://localhost:8000
+# Iniciar servidor de desarrollo en puerto 3000
+npm run dev
+
+# Compilar para producción
+npm run build
 ```
-
-## Instalar en el móvil
-
-- **iPhone**: abre la URL en Safari → botón Compartir → «Añadir a pantalla de inicio».
-- **Android**: abre la URL en Chrome → menú ⋮ → «Instalar aplicación».
-
-## Convertir a app nativa (opcional)
-
-Para publicar en App Store / Google Play, envuelve la web con Capacitor:
-
-```bash
-npm init -y
-npm i @capacitor/core @capacitor/cli
-npx cap init GYMFLOW com.gymflow.app --web-dir .
-npx cap add ios
-npx cap add android
-npx cap open ios   # requiere Xcode
-```
-
-## Licencia
-
-Uso personal. Ejercicios y recomendaciones de volumen basados en guías de entrenamiento de fuerza de uso común.

@@ -1,18 +1,20 @@
+// @ts-nocheck
 /* ==========================================================================
    FIGURES — ilustraciones vectoriales de ejecución (2 fotogramas + flecha)
    Estilo: pictograma de línea, vista lateral/frontal, equipo simplificado.
    Todas las poses se definen en un lienzo de 120 x 120.
    ========================================================================== */
-(function (global) {
+
   'use strict';
 
   var R = {
-    torso: 'var(--fg)',
-    limb: 'var(--fg)',
-    far: 'var(--fg-far)',
-    accent: 'var(--accent)',
-    prop: 'var(--prop)',
-    propSoft: 'var(--prop-soft)'
+    torso: '#f4f8fd',
+    limb: '#ffffff',
+    far: '#62758c',
+    accent: 'var(--accent, #c6f24e)',
+    prop: '#36495d',
+    propSoft: '#1e2936',
+    joint: '#4ec8ff'
   };
 
   // --- utilidades geométricas ---------------------------------------------
@@ -38,14 +40,15 @@
       (fill || 'none') + '" stroke="' + (stroke || 'none') + '" stroke-width="' + (sw || 2) + '"/>';
   }
 
+  function shadow(x, y, w) {
+    return '<ellipse cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" rx="' + (w || 16).toFixed(1) + '" ry="2.8" fill="#000000" opacity=".35"/>';
+  }
+
   // --- construcción de poses ----------------------------------------------
-  // Pose: { x, y (cadera), lean (inclinación torso), head, armN, armF, legN, legF }
-  // Cada miembro: { elbow, hand } / { knee, ankle, foot } (puntos absolutos)
-  // Se permiten atajos angulares con from().
   function pose(o) {
     o = o || {};
     var hip = o.hip || P(58, 74);
-    var lean = o.lean === undefined ? 0 : o.lean;       // grados, + = hacia delante (derecha)
+    var lean = o.lean === undefined ? 0 : o.lean;
     var torso = o.torso || 30;
     var ang = 180 - lean;
     var shoulder = from(hip, ang, torso);
@@ -64,54 +67,61 @@
     return p;
   }
 
-  // espejo ligero para el miembro lejano (mismo miembro, desplazado)
   function shift(pt, dx, dy) { return pt ? P(pt.x + (dx || -2.5), pt.y + (dy || 0)) : null; }
 
   function limbPath(root, joint, end, color, w) {
     if (!joint || !end) return '';
-    return line(root, joint, w || 5, color) + line(joint, end, (w || 5) - 0.6, color);
+    return line(root, joint, w || 5.2, color) + line(joint, end, (w || 5.2) - 0.6, color);
   }
 
   // --- equipo --------------------------------------------------------------
   function dumbbell(c, ang, color) {
-    // mancuerna: barra corta + dos discos, orientada según el ángulo dado
-    var r = ang * Math.PI / 180;
-    var ux = Math.sin(r), uy = Math.cos(r);   // eje de la barra (perpendicular al antebrazo)
+    var r = (ang || 90) * Math.PI / 180;
+    var ux = Math.sin(r), uy = Math.cos(r);
     var half = 5.5;
     var a = P(c.x - ux * half, c.y - uy * half);
     var b = P(c.x + ux * half, c.y + uy * half);
-    return line(a, b, 2, color) +
-      circle(P(a.x - ux * 1.2, a.y - uy * 1.2), 3.2, color) +
-      circle(P(b.x + ux * 1.2, b.y + uy * 1.2), 3.2, color);
+    return '<g>' +
+      line(a, b, 2.6, '#e2edfa') +
+      '<rect x="' + (a.x - 3).toFixed(1) + '" y="' + (a.y - 3.8).toFixed(1) + '" width="6" height="7.6" rx="1.8" fill="' + (color || R.accent) + '" stroke="#141c26" stroke-width="1"/>' +
+      '<rect x="' + (b.x - 3).toFixed(1) + '" y="' + (b.y - 3.8).toFixed(1) + '" width="6" height="7.6" rx="1.8" fill="' + (color || R.accent) + '" stroke="#141c26" stroke-width="1"/>' +
+    '</g>';
   }
 
   function barbell(c, color) {
-    // vista lateral: disco
-    return circle(c, 7.5, 'none', color, 2.6) + circle(c, 2.2, color);
+    var col = color || R.accent;
+    return '<g>' +
+      '<circle cx="' + c.x.toFixed(1) + '" cy="' + c.y.toFixed(1) + '" r="8.8" fill="#141c26" stroke="' + col + '" stroke-width="2.6"/>' +
+      '<circle cx="' + c.x.toFixed(1) + '" cy="' + c.y.toFixed(1) + '" r="5.2" fill="none" stroke="' + col + '" stroke-width="1.2" stroke-dasharray="2.5 2" opacity=".75"/>' +
+      '<circle cx="' + c.x.toFixed(1) + '" cy="' + c.y.toFixed(1) + '" r="2.6" fill="' + col + '"/>' +
+    '</g>';
   }
 
   function kettlebell(c, color) {
+    var col = color || R.accent;
     return '<path d="M' + (c.x - 4).toFixed(1) + ' ' + (c.y - 4).toFixed(1) +
-      ' q4 -6 8 0" fill="none" stroke="' + color + '" stroke-width="2.4" stroke-linecap="round"/>' +
-      circle(P(c.x, c.y + 2), 6, 'none', color, 2.6);
+      ' q4 -6 8 0" fill="none" stroke="' + col + '" stroke-width="2.6" stroke-linecap="round"/>' +
+      circle(P(c.x, c.y + 2), 6.2, '#141c26', col, 2.6);
   }
 
   function band(c, color) {
     return '<path d="M' + (c.x - 14).toFixed(1) + ' ' + (c.y + 2).toFixed(1) +
-      ' q7 -5 14 0 q7 5 14 0" fill="none" stroke="' + color + '" stroke-width="2.4" stroke-linecap="round"/>';
+      ' q7 -5 14 0 q7 5 14 0" fill="none" stroke="' + (color || R.accent) + '" stroke-width="2.6" stroke-linecap="round"/>';
   }
 
   function bench(x, y, w, ang, soft) {
     var a = (ang || 0) * Math.PI / 180;
     var hx = Math.cos(a) * w / 2, hy = Math.sin(a) * w / 2;
     var x1 = x - hx, y1 = y - hy, x2 = x + hx, y2 = y + hy;
-    return '<g><line x1="' + x1.toFixed(1) + '" y1="' + y1.toFixed(1) + '" x2="' + x2.toFixed(1) +
-      '" y2="' + y2.toFixed(1) + '" stroke="' + R.prop + '" stroke-width="4.5" stroke-linecap="round"/>' +
-      (soft ? '' : '<line x1="' + (x1 + 4).toFixed(1) + '" y1="' + (y1 + 6).toFixed(1) + '" x2="' + (x1 + 4).toFixed(1) +
-        '" y2="' + (y1 + 22).toFixed(1) + '" stroke="' + R.prop + '" stroke-width="2" opacity=".55"/>' +
-        '<line x1="' + (x2 - 4).toFixed(1) + '" y1="' + (y2 + 6).toFixed(1) + '" x2="' + (x2 - 4).toFixed(1) +
-        '" y2="' + (y2 + 22).toFixed(1) + '" stroke="' + R.prop + '" stroke-width="2" opacity=".55"/>') +
-      '</g>';
+    return '<g>' +
+      shadow((x1 + x2) / 2, Math.max(y1, y2) + 24, w / 2 + 6) +
+      '<line x1="' + x1.toFixed(1) + '" y1="' + y1.toFixed(1) + '" x2="' + x2.toFixed(1) + '" y2="' + y2.toFixed(1) + '" stroke="#2f3e50" stroke-width="6.8" stroke-linecap="round"/>' +
+      '<line x1="' + x1.toFixed(1) + '" y1="' + y1.toFixed(1) + '" x2="' + x2.toFixed(1) + '" y2="' + y2.toFixed(1) + '" stroke="#5cc8ff" stroke-width="1.8" stroke-linecap="round" opacity=".4"/>' +
+      (soft ? '' : '<line x1="' + (x1 + 4).toFixed(1) + '" y1="' + (y1 + 5).toFixed(1) + '" x2="' + (x1 + 4).toFixed(1) + '" y2="' + (y1 + 24).toFixed(1) + '" stroke="#24303f" stroke-width="2.8"/>' +
+        '<line x1="' + (x2 - 4).toFixed(1) + '" y1="' + (y2 + 5).toFixed(1) + '" x2="' + (x2 - 4).toFixed(1) + '" y2="' + (y2 + 24).toFixed(1) + '" stroke="#24303f" stroke-width="2.8"/>' +
+        '<line x1="' + (x1 - 3).toFixed(1) + '" y1="' + (y1 + 24).toFixed(1) + '" x2="' + (x1 + 11).toFixed(1) + '" y2="' + (y1 + 24).toFixed(1) + '" stroke="#24303f" stroke-width="3.2" stroke-linecap="round"/>' +
+        '<line x1="' + (x2 - 11).toFixed(1) + '" y1="' + (y2 + 24).toFixed(1) + '" x2="' + (x2 + 3).toFixed(1) + '" y2="' + (y2 + 24).toFixed(1) + '" stroke="#24303f" stroke-width="3.2" stroke-linecap="round"/>') +
+    '</g>';
   }
 
   function frame(x, y, w, h) {
@@ -121,7 +131,7 @@
 
   function stack(x, y, plates) {
     var s = '<rect x="' + x + '" y="' + y + '" width="14" height="' + (plates * 3.4 + 6) +
-      '" rx="2" fill="none" stroke="' + R.prop + '" stroke-width="2" opacity=".8"/>';
+      '" rx="2" fill="#141c26" stroke="' + R.prop + '" stroke-width="2" opacity=".9"/>';
     for (var i = 0; i < plates; i++) {
       s += '<line x1="' + (x + 3) + '" y1="' + (y + 5 + i * 3.4) + '" x2="' + (x + 11) + '" y2="' +
         (y + 5 + i * 3.4) + '" stroke="' + R.prop + '" stroke-width="1.6" opacity=".55"/>';
@@ -130,39 +140,76 @@
   }
 
   function pulley(c, color) {
-    return circle(c, 4.2, 'var(--bg)', color, 2.2) + circle(c, 1.2, color);
+    return circle(c, 4.6, '#0f1620', color || R.accent, 2.2) + circle(c, 1.4, color || R.accent);
   }
 
   function cable(fromPt, toPt, color, op) {
     var mx = fromPt.x + 6;
     return '<path d="M' + fromPt.x.toFixed(1) + ' ' + fromPt.y.toFixed(1) + ' Q' + mx.toFixed(1) + ' ' +
       ((fromPt.y + toPt.y) / 2).toFixed(1) + ' ' + toPt.x.toFixed(1) + ' ' + toPt.y.toFixed(1) +
-      '" fill="none" stroke="' + color + '" stroke-width="1.8" opacity="' + (op || .85) + '"/>';
+      '" fill="none" stroke="' + (color || R.accent) + '" stroke-width="2" opacity="' + (op || .9) + '"/>';
   }
 
   function ground(y) {
-    return '<line x1="8" y1="' + y + '" x2="112" y2="' + y + '" stroke="' + R.prop +
-      '" stroke-width="2.4" stroke-linecap="round" opacity=".7"/>';
+    return '<g>' +
+      shadow(60, y, 48) +
+      '<line x1="8" y1="' + y + '" x2="112" y2="' + y + '" stroke="' + R.prop +
+      '" stroke-width="2.4" stroke-linecap="round" opacity=".65"/>' +
+    '</g>';
   }
 
   // --- dibujo de una pose --------------------------------------------------
   function drawPose(p, opts) {
     opts = opts || {};
     var far = opts.far !== false;
+    var pColor = opts.color || R.torso;
+    var limbColor = opts.color || R.limb;
+    var farColor = opts.ghost ? '#435368' : R.far;
     var s = '';
-    // piernas lejanas primero
-    if (far && p.legF) s += limbPath(p.hip, p.legF.knee, p.legF.ankle, R.far, 4.4) +
-      (p.legF.foot ? line(p.legF.ankle, p.legF.foot, 4, R.far) : '');
-    if (far && p.armF) s += limbPath(p.shoulder, p.armF.elbow, p.armF.hand, R.far, 4.4);
-    // torso
-    s += line(p.hip, p.shoulder, 5.6, R.torso);
-    s += line(p.shoulder, P(p.head.x, p.head.y), 4, R.torso);
-    s += circle(p.head, p.headR, R.torso);
-    // pierna cercana
-    if (p.legN) s += limbPath(p.hip, p.legN.knee, p.legN.ankle, R.limb, 5.2) +
-      (p.legN.foot ? line(p.legN.ankle, p.legN.foot, 4.6, R.limb) : '');
-    // brazo cercano
-    if (p.armN) s += limbPath(p.shoulder, p.armN.elbow, p.armN.hand, R.limb, 5.2);
+
+    // Piernas lejanas
+    if (far && p.legF) {
+      s += limbPath(p.hip, p.legF.knee, p.legF.ankle, farColor, 4.6) +
+        (p.legF.foot ? line(p.legF.ankle, p.legF.foot, 4.2, farColor) : '');
+      if (p.legF.knee) s += circle(p.legF.knee, 2, '#0f1620', farColor, 1);
+    }
+
+    // Brazo lejano
+    if (far && p.armF) {
+      s += limbPath(p.shoulder, p.armF.elbow, p.armF.hand, farColor, 4.6);
+      if (p.armF.elbow) s += circle(p.armF.elbow, 2, '#0f1620', farColor, 1);
+    }
+
+    // Torso con grosor atlético
+    s += line(p.hip, p.shoulder, 6.6, pColor);
+    // Cuello
+    s += line(p.shoulder, P(p.head.x, p.head.y), 4.4, pColor);
+
+    // Cabeza con dirección de mirada para postura de columna cervical
+    s += circle(p.head, p.headR || 7, pColor, 'none');
+    var gazeDx = p.lean > 45 ? 2.8 : (p.lean < -20 ? -2.8 : 2.4);
+    var gazeDy = p.lean > 70 ? 2 : -0.6;
+    s += circle(P(p.head.x + gazeDx, p.head.y + gazeDy), 1.6, '#0a0e13');
+
+    // Articulaciones axiales (cadera y hombro)
+    s += circle(p.hip, 2.5, '#0a0e13', pColor, 1.4);
+    s += circle(p.shoulder, 2.5, '#0a0e13', pColor, 1.4);
+
+    // Pierna cercana
+    if (p.legN) {
+      s += limbPath(p.hip, p.legN.knee, p.legN.ankle, limbColor, 5.6) +
+        (p.legN.foot ? line(p.legN.ankle, p.legN.foot, 5, limbColor) : '');
+      if (p.legN.knee) s += circle(p.legN.knee, 2.6, '#0a0e13', R.accent, 1.4);
+      if (p.legN.ankle) s += circle(p.legN.ankle, 2, '#0a0e13', limbColor, 1.2);
+    }
+
+    // Brazo cercano
+    if (p.armN) {
+      s += limbPath(p.shoulder, p.armN.elbow, p.armN.hand, limbColor, 5.4);
+      if (p.armN.elbow) s += circle(p.armN.elbow, 2.6, '#0a0e13', R.accent, 1.4);
+      if (p.armN.hand) s += circle(p.armN.hand, 2.2, R.accent);
+    }
+
     return s;
   }
 
@@ -180,16 +227,19 @@
     var off = bend === undefined ? 10 : bend;
     var cx = mx + nx * off, cy = my + ny * off;
     var ang = Math.atan2(b.y - cy, b.x - cx) * 180 / Math.PI;
-    var hx1 = b.x - 5 * Math.cos((ang - 22) * Math.PI / 180);
-    var hy1 = b.y - 5 * Math.sin((ang - 22) * Math.PI / 180);
-    var hx2 = b.x - 5 * Math.cos((ang + 22) * Math.PI / 180);
-    var hy2 = b.y - 5 * Math.sin((ang + 22) * Math.PI / 180);
-    return '<path d="M' + a.x.toFixed(1) + ' ' + a.y.toFixed(1) + ' Q' + cx.toFixed(1) + ' ' + cy.toFixed(1) +
-      ' ' + b.x.toFixed(1) + ' ' + b.y.toFixed(1) + '" fill="none" stroke="' + color +
-      '" stroke-width="1.8" stroke-linecap="round" stroke-dasharray="3 3" opacity=".85"/>' +
+    var hx1 = b.x - 6 * Math.cos((ang - 24) * Math.PI / 180);
+    var hy1 = b.y - 6 * Math.sin((ang - 24) * Math.PI / 180);
+    var hx2 = b.x - 6 * Math.cos((ang + 24) * Math.PI / 180);
+    var hy2 = b.y - 6 * Math.sin((ang + 24) * Math.PI / 180);
+    var c = color || R.accent;
+    return '<g class="fig-arrow-group">' +
+      '<path d="M' + a.x.toFixed(1) + ' ' + a.y.toFixed(1) + ' Q' + cx.toFixed(1) + ' ' + cy.toFixed(1) +
+      ' ' + b.x.toFixed(1) + ' ' + b.y.toFixed(1) + '" fill="none" stroke="' + c +
+      '" stroke-width="2.2" stroke-linecap="round" stroke-dasharray="3.5 2.5" opacity=".95"/>' +
       '<path d="M' + hx1.toFixed(1) + ' ' + hy1.toFixed(1) + ' L' + b.x.toFixed(1) + ' ' + b.y.toFixed(1) +
-      ' L' + hx2.toFixed(1) + ' ' + hy2.toFixed(1) + '" fill="none" stroke="' + color +
-      '" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>';
+      ' L' + hx2.toFixed(1) + ' ' + hy2.toFixed(1) + '" fill="' + c + '" stroke="' + c +
+      '" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>' +
+    '</g>';
   }
 
   // =======================================================================
@@ -1221,28 +1271,102 @@
     if (!pat) pat = PAT['squat'];
     var frames = pat.frames;
     var a = frames[0], b = frames[frames.length - 1];
-    var s = '<svg viewBox="0 0 120 120" class="fig" role="img" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">';
+    var accentCol = opts.accentColor || R.accent;
+
+    // Fase 1 únicamente (Posición Inicial / Postura)
+    if (opts.frame === 0) {
+      var s0 = '<svg viewBox="0 0 120 120" class="fig" role="img" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">';
+      s0 += pat.props ? pat.props() : '';
+      s0 += '<g>' + drawPose(a, { color: '#ffffff' }) + equipSVG(pat, 0, a, false) + '</g>';
+      s0 += '</svg>';
+      return s0;
+    }
+
+    // Fase 2 únicamente (Punto de Contracción)
+    if (opts.frame === 1) {
+      var s1 = '<svg viewBox="0 0 120 120" class="fig" role="img" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">';
+      s1 += pat.props ? pat.props() : '';
+      s1 += '<g>' + drawPose(b, { color: '#ffffff' }) + equipSVG(pat, 1, b, false) + '</g>';
+      s1 += '</svg>';
+      return s1;
+    }
+
+    // Modo Comparativo lado a lado
+    if (opts.mode === 'sideBySide') {
+      var sSide = '<svg viewBox="0 0 240 120" class="fig fig-side" role="img" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">';
+      sSide += '<line x1="120" y1="14" x2="120" y2="106" stroke="#24303f" stroke-width="1.2" stroke-dasharray="3 3"/>';
+      // Lado 1 (Inicio)
+      sSide += '<g transform="translate(0, 0)">';
+      sSide += pat.props ? pat.props() : '';
+      sSide += drawPose(a, { color: '#ffffff' }) + equipSVG(pat, 0, a, false);
+      sSide += '<rect x="8" y="8" width="56" height="18" rx="6" fill="#141c26" stroke="#2a3848" stroke-width="1"/>';
+      sSide += '<text x="36" y="20.5" fill="#8b9ab0" font-size="8.5" font-weight="700" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif">1. INICIO</text>';
+      sSide += '</g>';
+      // Lado 2 (Contracción)
+      sSide += '<g transform="translate(120, 0)">';
+      sSide += pat.props ? pat.props() : '';
+      sSide += drawPose(b, { color: '#ffffff' }) + equipSVG(pat, 1, b, false);
+      sSide += '<rect x="8" y="8" width="86" height="18" rx="6" fill="rgba(198,242,78,0.14)" stroke="' + accentCol + '" stroke-width="1"/>';
+      sSide += '<text x="51" y="20.5" fill="' + accentCol + '" font-size="8.5" font-weight="700" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif">2. CONTRACCIÓN</text>';
+      sSide += '</g>';
+      sSide += '</svg>';
+      return sSide;
+    }
+
+    // Modo estático clásico si se desactiva la animación
+    if (opts.animated === false) {
+      var sStat = '<svg viewBox="0 0 120 120" class="fig" role="img" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">';
+      sStat += pat.props ? pat.props() : '';
+      sStat += '<g opacity=".35">' + drawPose(a, { ghost: true }) + equipSVG(pat, 0, a, true) + '</g>';
+      sStat += '<g>' + drawPose(b, { color: '#ffffff' }) + equipSVG(pat, 1, b, false) + '</g>';
+      if (!pat.hideArrow && frames.length > 1) {
+        var paStat = pat.arrowAt === 'hip' ? a.hip : pat.arrowAt === 'shoulder' ? a.shoulder : handPoint(a, true);
+        var pbStat = pat.arrowAt === 'hip' ? b.hip : pat.arrowAt === 'shoulder' ? b.shoulder : handPoint(b, true);
+        if (dist(paStat, pbStat) > 6) sStat += arrow(paStat, pbStat, accentCol, 9);
+      }
+      sStat += '</svg>';
+      return sStat;
+    }
+
+    // Modo Animado en bucle continuo de repetición (comprensión instantánea de postura y movimiento)
+    var animUid = 'anim_' + id.replace(/[^a-z0-9]/gi, '_');
+    var s = '<svg viewBox="0 0 120 120" class="fig fig-animated" role="img" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">';
+    s += '<style>' +
+      '@keyframes fA_' + animUid + ' { 0%, 36% { opacity: 1; } 48%, 86% { opacity: 0; } 96%, 100% { opacity: 1; } } ' +
+      '@keyframes fB_' + animUid + ' { 0%, 36% { opacity: 0; } 48%, 86% { opacity: 1; } 96%, 100% { opacity: 0; } } ' +
+      '@keyframes fArr_' + animUid + ' { 0%, 36% { opacity: 0.2; stroke-dashoffset: 14; } 48%, 82% { opacity: 1; stroke-dashoffset: 0; } 94%, 100% { opacity: 0.2; stroke-dashoffset: -14; } } ' +
+      '.f-frameA-' + animUid + ' { animation: fA_' + animUid + ' 2.6s ease-in-out infinite; } ' +
+      '.f-frameB-' + animUid + ' { animation: fB_' + animUid + ' 2.6s ease-in-out infinite; } ' +
+      '.f-arrow-' + animUid + ' { animation: fArr_' + animUid + ' 2.6s ease-in-out infinite; } ' +
+      '</style>';
+
     s += pat.props ? pat.props() : '';
-    // fantasma (inicio)
-    s += '<g opacity=".38">' + drawPose(a, {}) + equipSVG(pat, 0, a, true) + '</g>';
-    // pose final
-    s += '<g>' + drawPose(b, {}) + equipSVG(pat, 1, b, false) + '</g>';
-    // flecha de movimiento
+
+    // Pose A (Fase 1: Preparación/Inicio)
+    s += '<g class="f-frameA-' + animUid + '">' + drawPose(a, { color: '#ffffff' }) + equipSVG(pat, 0, a, false) + '</g>';
+
+    // Pose B (Fase 2: Contracción)
+    s += '<g class="f-frameB-' + animUid + '">' + drawPose(b, { color: '#ffffff' }) + equipSVG(pat, 1, b, false) + '</g>';
+
+    // Flecha de trayectoria animada
     if (!pat.hideArrow && frames.length > 1) {
       var pa = pat.arrowAt === 'hip' ? a.hip : pat.arrowAt === 'shoulder' ? a.shoulder : handPoint(a, true);
       var pb = pat.arrowAt === 'hip' ? b.hip : pat.arrowAt === 'shoulder' ? b.shoulder : handPoint(b, true);
-      if (dist(pa, pb) > 6) s += arrow(pa, pb, R.accent, 9);
+      if (dist(pa, pb) > 6) {
+        s += '<g class="f-arrow-' + animUid + '">' + arrow(pa, pb, accentCol, 9) + '</g>';
+      }
     }
+
     s += '</svg>';
     return s;
   }
 
-  global.FIG = {
+  export const FIG: any = {
     ids: Object.keys(PAT),
     render: render,
     has: function (id) { return !!PAT[id]; },
+    getPattern: function (id) { return PAT[id] || PAT['squat']; },
     pose: pose,
     P: P,
     from: from
   };
-})(window);

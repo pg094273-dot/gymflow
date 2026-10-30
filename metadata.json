@@ -1,0 +1,8 @@
+{
+  "name": "GYMFLOW",
+  "description": "Planificador de entrenamientos de musculación con rutinas por días, ejercicios clasificados por grupo muscular, registro de pesos y exportación a PDF A4.",
+  "permissions": [],
+  "capabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

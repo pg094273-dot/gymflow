@@ -1,15 +1,9 @@
 /* GYMFLOW — service worker: app offline */
-var CACHE = 'gymflow-v3';
+var CACHE = 'gymflow-v4';
 var FILES = [
   './',
   './index.html',
   './manifest.webmanifest',
-  './css/styles.css',
-  './js/figures.js',
-  './js/data.js',
-  './js/store.js',
-  './js/generator.js',
-  './js/app.js',
   './icons/icon-192.png',
   './icons/icon-512.png',
   './icons/apple-touch-icon.png'

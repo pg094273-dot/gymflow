@@ -173,9 +173,10 @@ textarea.input { height: auto; min-height: 80px; padding: 12px 14px; line-height
 .ex-row + .ex-row { border-top: 1px solid var(--line); }
 .ex-thumb {
   width: 62px; height: 62px; flex: 0 0 auto; border-radius: 13px;
-  background: var(--bg-2); border: 1px solid var(--line); display: grid; place-items: center; overflow: hidden;
+  background: radial-gradient(circle at center, #1b2533 0%, #0c1218 100%); border: 1px solid var(--line); display: grid; place-items: center; overflow: hidden;
 }
 .ex-thumb svg { width: 58px; height: 58px; }
+.ex-thumb:hover svg { transform: scale(1.05); transition: transform .2s ease; }
 .ex-name { flex: 1; min-width: 0; }
 .ex-name .n { font-weight: 600; font-size: 14.5px; line-height: 1.25; }
 .ex-name .m { font-size: 12px; color: var(--muted); margin-top: 2px; }
@@ -208,6 +209,7 @@ textarea.input { height: auto; min-height: 80px; padding: 12px 14px; line-height
   border: 1px solid var(--line); border-radius: 18px; padding: 8px; display: grid; place-items: center;
 }
 .fig-hero svg { width: 100%; max-width: 260px; height: auto; }
+.fig-hero svg.fig-side { max-width: 360px; }
 
 .kv { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
 .kv .k { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 7px 10px; font-size: 12px; color: var(--muted); }
