@@ -33,8 +33,9 @@ src/
 └── main.tsx             # Punto de entrada de React
 public/
 ├── img/ex/              # 244 fotografías WebP (2 por ejercicio: inicio y final)
+├── icons/               # Iconos PWA (incluye el icono de inicio de iPhone, 180×180)
+├── manifest.webmanifest # Manifest de instalación
 └── sw.js                # Service worker para uso sin conexión
-icons/                   # Iconos PWA
 css/
 └── styles.css           # Estilos visuales de la aplicación
 ```
