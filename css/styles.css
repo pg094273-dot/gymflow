@@ -177,6 +177,10 @@ textarea.input { height: auto; min-height: 80px; padding: 12px 14px; line-height
 }
 .ex-thumb svg { width: 58px; height: 58px; }
 .ex-thumb:hover svg { transform: scale(1.05); transition: transform .2s ease; }
+.ex-thumb .ex-img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .2s ease; }
+.ex-thumb:hover .ex-img { transform: scale(1.06); }
+.ex-thumb .fig-fallback { width: 100%; height: 100%; display: grid; place-items: center; }
+.ex-thumb .fig-fallback svg { width: 100%; height: 100%; }
 .ex-name { flex: 1; min-width: 0; }
 .ex-name .n { font-weight: 600; font-size: 14.5px; line-height: 1.25; }
 .ex-name .m { font-size: 12px; color: var(--muted); margin-top: 2px; }
@@ -210,6 +214,47 @@ textarea.input { height: auto; min-height: 80px; padding: 12px 14px; line-height
 }
 .fig-hero svg { width: 100%; max-width: 260px; height: auto; }
 .fig-hero svg.fig-side { max-width: 360px; }
+
+/* ---------- fotografías de ejecución ---------- */
+.ex-stage {
+  background: radial-gradient(120% 110% at 50% 0%, rgba(198,242,78,.14), rgba(15,21,29,1) 75%);
+  border: 1px solid var(--line); border-radius: 20px; padding: 14px;
+  min-height: 190px; display: grid; place-items: center;
+}
+.ex-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.ex-pair figure { margin: 0; position: relative; border-radius: 14px; overflow: hidden; background: #0b1118; border: 1px solid var(--line); }
+.ex-pair img { display: block; width: 100%; aspect-ratio: 3 / 2; object-fit: contain; background: #0b1118; }
+.ex-pair .fig-fallback { width: 100%; aspect-ratio: 3 / 2; display: grid; place-items: center; }
+.ex-pair .fig-fallback svg { width: 100%; height: 100%; }
+.ex-pair figcaption {
+  display: flex; flex-direction: column; gap: 1px; padding: 7px 9px;
+  background: rgba(15,21,29,.92); border-top: 1px solid var(--line);
+}
+.ex-pair figcaption b { font-size: 11px; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); }
+.ex-pair figcaption span { font-size: 11.5px; color: #cfdae8; }
+.ex-pair figcaption.end b { color: var(--accent); }
+.ex-motion { position: relative; border-radius: 14px; overflow: hidden; border: 1px solid var(--line); background: #0b1118; }
+.ex-motion::before { content: ''; display: block; padding-top: 66.66%; }
+.ex-motion img, .ex-motion .fig-fallback { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; opacity: 0; }
+.ex-motion.playing img.ex-frame0, .ex-motion.playing .fig-fallback { animation: exLoopA 2.8s steps(1, end) infinite; }
+.ex-motion.playing img.ex-frame1 { animation: exLoopB 2.8s steps(1, end) infinite; }
+@keyframes exLoopA { 0%, 49.99% { opacity: 1; } 50%, 100% { opacity: 0; } }
+@keyframes exLoopB { 0%, 49.99% { opacity: 0; } 50%, 100% { opacity: 1; } }
+.ex-motion .tag {
+  position: absolute; left: 8px; bottom: 8px; z-index: 2;
+  background: rgba(6,10,15,.76); color: #fff; font-size: 10.5px; font-weight: 600;
+  padding: 3px 9px; border-radius: 99px;
+}
+.ex-phase { width: 100%; }
+.ex-phase-tag {
+  display: inline-block; background: #1a2330; border: 1px solid var(--line);
+  padding: 3px 10px; border-radius: 99px; font-size: 10.5px; font-weight: 700;
+  color: var(--muted); margin-bottom: 8px;
+}
+.ex-phase-tag.end { background: rgba(198,242,78,.16); border-color: rgba(198,242,78,.4); color: var(--accent); }
+.ex-phase img { display: block; width: 100%; aspect-ratio: 3 / 2; object-fit: contain; border-radius: 14px; border: 1px solid var(--line); background: #0b1118; }
+.ex-phase .fig-fallback { width: 100%; aspect-ratio: 3 / 2; display: grid; place-items: center; }
+.ex-phase .fig-fallback svg { width: 100%; height: 100%; }
 
 .kv { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
 .kv .k { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 7px 10px; font-size: 12px; color: var(--muted); }
@@ -340,6 +385,9 @@ textarea.input { height: auto; min-height: 80px; padding: 12px 14px; line-height
   .pdf-table tr { page-break-inside: avoid; }
   .pdf-ex { display: flex; align-items: center; gap: 3mm; }
   .pdf-ex svg { width: 22mm; height: 22mm; }
+  .pdf-ex img { width: 22mm; height: 15mm; object-fit: cover; border-radius: 1.5mm; display: block; background: #eee; }
+  .pdf-ex .fig-fallback { width: 22mm; height: 15mm; }
+  .pdf-ex .fig-fallback svg { width: 100%; height: 100%; }
   .pdf-ex .n { font-weight: 700; font-size: 10pt; }
   .pdf-ex .m { font-size: 8pt; color: #666; }
   .pdf-sets { font-size: 10pt; font-weight: 700; white-space: nowrap; }

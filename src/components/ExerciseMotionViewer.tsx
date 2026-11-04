@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Exercise, MuscleGroup } from '../types';
-import { Figure } from './Figure';
+import { ExercisePhoto } from './ExercisePhoto';
 import { getPostureGuideForExercise } from '../data/postureGuides';
 
 interface ExerciseMotionViewerProps {
@@ -8,67 +8,60 @@ interface ExerciseMotionViewerProps {
   group?: MuscleGroup;
 }
 
+type ViewMode = 'animated' | 'sideBySide' | 'phase0' | 'phase1';
+
 export const ExerciseMotionViewer: React.FC<ExerciseMotionViewerProps> = ({
   exercise,
   group
 }) => {
-  const [viewMode, setViewMode] = useState<'animated' | 'sideBySide' | 'phase0' | 'phase1'>('animated');
+  const [viewMode, setViewMode] = useState<ViewMode>('sideBySide');
   const guide = getPostureGuideForExercise(exercise.p, group?.name);
   const accentColor = group?.color || '#c6f24e';
+
+  const modeButton = (mode: ViewMode, label: string) => (
+    <button
+      type="button"
+      className={viewMode === mode ? 'on' : ''}
+      onClick={() => setViewMode(mode)}
+      style={{ fontSize: '12.5px' }}
+    >
+      {label}
+    </button>
+  );
 
   return (
     <div className="motion-viewer" style={{ marginTop: '12px' }}>
       {/* Mode Selector Tabs */}
       <div className="seg" style={{ marginBottom: '10px' }}>
-        <button
-          type="button"
-          className={viewMode === 'animated' ? 'on' : ''}
-          onClick={() => setViewMode('animated')}
-          style={{ fontSize: '13px' }}
-        >
-          🎬 Animación
-        </button>
-        <button
-          type="button"
-          className={viewMode === 'sideBySide' ? 'on' : ''}
-          onClick={() => setViewMode('sideBySide')}
-          style={{ fontSize: '13px' }}
-        >
-          ↔️ Inicio vs Fin
-        </button>
-        <button
-          type="button"
-          className={viewMode === 'phase0' ? 'on' : ''}
-          onClick={() => setViewMode('phase0')}
-          style={{ fontSize: '13px' }}
-        >
-          1️⃣ Inicio
-        </button>
-        <button
-          type="button"
-          className={viewMode === 'phase1' ? 'on' : ''}
-          onClick={() => setViewMode('phase1')}
-          style={{ fontSize: '13px' }}
-        >
-          2️⃣ Contracción
-        </button>
+        {modeButton('sideBySide', '↔️ Inicio / fin')}
+        {modeButton('animated', '🎬 Movimiento')}
+        {modeButton('phase0', '1️⃣ Inicio')}
+        {modeButton('phase1', '2️⃣ Fin')}
       </div>
 
       {/* Main Display Area */}
-      <div
-        className="fig-hero"
-        style={{
-          position: 'relative',
-          padding: '14px',
-          background: 'radial-gradient(120% 110% at 50% 0%, rgba(198,242,78,.14), rgba(15,21,29,1) 75%)',
-          borderRadius: '20px',
-          border: '1px solid var(--line)',
-          minHeight: '190px'
-        }}
-      >
+      <div className="ex-stage">
         {viewMode === 'animated' && (
-          <div style={{ width: '100%', maxWidth: '280px', margin: '0 auto', textAlign: 'center' }}>
-            <Figure patternId={exercise.p} mode="animated" accentColor={accentColor} />
+          <div style={{ width: '100%', maxWidth: '420px', margin: '0 auto' }}>
+            <div className="ex-motion playing">
+              <ExercisePhoto
+                exerciseId={exercise.id}
+                patternId={exercise.p}
+                frame={0}
+                alt={`${exercise.n}: posición inicial`}
+                className="ex-frame0"
+                eager
+              />
+              <ExercisePhoto
+                exerciseId={exercise.id}
+                patternId={exercise.p}
+                frame={1}
+                alt={`${exercise.n}: posición final`}
+                className="ex-frame1"
+                eager
+              />
+              <span className="tag">Movimiento en bucle</span>
+            </div>
             <div
               className="row-between"
               style={{
@@ -79,7 +72,7 @@ export const ExerciseMotionViewer: React.FC<ExerciseMotionViewerProps> = ({
                 border: '1px solid var(--line)'
               }}
             >
-              <span className="tiny" style={{ color: 'var(--accent)', fontWeight: 700 }}>
+              <span className="tiny" style={{ color: accentColor, fontWeight: 700 }}>
                 ● Repetición en bucle
               </span>
               <span className="tiny muted">{guide.tempo}</span>
@@ -88,91 +81,64 @@ export const ExerciseMotionViewer: React.FC<ExerciseMotionViewerProps> = ({
         )}
 
         {viewMode === 'sideBySide' && (
-          <div style={{ width: '100%', maxWidth: '380px', margin: '0 auto' }}>
-            <Figure patternId={exercise.p} mode="sideBySide" accentColor={accentColor} />
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: '1fr 1fr',
-                gap: '8px',
-                marginTop: '10px'
-              }}
-            >
-              <div
-                style={{
-                  background: 'rgba(20,27,36,.85)',
-                  border: '1px solid var(--line)',
-                  borderRadius: '10px',
-                  padding: '6px 8px',
-                  textAlign: 'center'
-                }}
-              >
-                <div className="tiny" style={{ color: 'var(--muted)', fontWeight: 700 }}>
-                  1. POSICIÓN INICIAL
-                </div>
-                <div className="tiny" style={{ color: '#cfdae8', marginTop: '2px' }}>
-                  Colocación y estiramiento
-                </div>
-              </div>
-              <div
-                style={{
-                  background: 'rgba(198,242,78,.12)',
-                  border: '1px solid rgba(198,242,78,.35)',
-                  borderRadius: '10px',
-                  padding: '6px 8px',
-                  textAlign: 'center'
-                }}
-              >
-                <div className="tiny" style={{ color: 'var(--accent)', fontWeight: 700 }}>
-                  2. MÁXIMA CONTRACCIÓN
-                </div>
-                <div className="tiny" style={{ color: '#cfdae8', marginTop: '2px' }}>
-                  Pico de tensión muscular
-                </div>
-              </div>
+          <div style={{ width: '100%', maxWidth: '460px', margin: '0 auto' }}>
+            <div className="ex-pair">
+              <figure>
+                <ExercisePhoto
+                  exerciseId={exercise.id}
+                  patternId={exercise.p}
+                  frame={0}
+                  alt={`${exercise.n}: posición inicial`}
+                  eager
+                />
+                <figcaption>
+                  <b>1 · Inicio</b>
+                  <span>Colocación y estiramiento</span>
+                </figcaption>
+              </figure>
+              <figure>
+                <ExercisePhoto
+                  exerciseId={exercise.id}
+                  patternId={exercise.p}
+                  frame={1}
+                  alt={`${exercise.n}: posición final`}
+                  eager
+                />
+                <figcaption className="end">
+                  <b>2 · Fin</b>
+                  <span>Máxima contracción</span>
+                </figcaption>
+              </figure>
+            </div>
+            <div className="tiny muted" style={{ textAlign: 'center', marginTop: '8px' }}>
+              Compara las dos posiciones: fíjate en la trayectoria y en la postura de la espalda.
             </div>
           </div>
         )}
 
         {viewMode === 'phase0' && (
-          <div style={{ width: '100%', maxWidth: '280px', margin: '0 auto', textAlign: 'center' }}>
-            <div
-              style={{
-                display: 'inline-block',
-                background: '#1a2330',
-                border: '1px solid var(--line)',
-                padding: '3px 10px',
-                borderRadius: '99px',
-                fontSize: '11px',
-                fontWeight: 700,
-                color: 'var(--muted)',
-                marginBottom: '8px'
-              }}
-            >
-              FASE 1: POSICIÓN DE PARTIDA / POSTURA
-            </div>
-            <Figure patternId={exercise.p} frame={0} accentColor={accentColor} />
+          <div className="ex-phase" style={{ maxWidth: '420px', margin: '0 auto' }}>
+            <div className="ex-phase-tag">FASE 1: POSICIÓN DE PARTIDA / POSTURA</div>
+            <ExercisePhoto
+              exerciseId={exercise.id}
+              patternId={exercise.p}
+              frame={0}
+              alt={`${exercise.n}: posición de partida`}
+              eager
+            />
           </div>
         )}
 
         {viewMode === 'phase1' && (
-          <div style={{ width: '100%', maxWidth: '280px', margin: '0 auto', textAlign: 'center' }}>
-            <div
-              style={{
-                display: 'inline-block',
-                background: 'rgba(198,242,78,.16)',
-                border: '1px solid rgba(198,242,78,.4)',
-                padding: '3px 10px',
-                borderRadius: '99px',
-                fontSize: '11px',
-                fontWeight: 700,
-                color: 'var(--accent)',
-                marginBottom: '8px'
-              }}
-            >
-              FASE 2: CONTRACCIÓN MÁXIMA & BLOQUEO
-            </div>
-            <Figure patternId={exercise.p} frame={1} accentColor={accentColor} />
+          <div className="ex-phase" style={{ maxWidth: '420px', margin: '0 auto' }}>
+            <div className="ex-phase-tag end">FASE 2: CONTRACCIÓN MÁXIMA & BLOQUEO</div>
+            <ExercisePhoto
+              exerciseId={exercise.id}
+              patternId={exercise.p}
+              frame={1}
+              alt={`${exercise.n}: máxima contracción`}
+              eager
+            />
           </div>
         )}
       </div>

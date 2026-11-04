@@ -1,5 +1,5 @@
 /* GYMFLOW — service worker: app offline */
-var CACHE = 'gymflow-v4';
+var CACHE = 'gymflow-v5';
 var FILES = [
   './',
   './index.html',
@@ -27,6 +27,22 @@ self.addEventListener('activate', function (e) {
 
 self.addEventListener('fetch', function (e) {
   if (e.request.method !== 'GET') return;
+
+  // Navegación: red primero para recibir siempre la última versión;
+  // si no hay conexión, se sirve la app cacheada.
+  if (e.request.mode === 'navigate') {
+    e.respondWith(
+      fetch(e.request).then(function (res) {
+        var copy = res.clone();
+        caches.open(CACHE).then(function (c) { try { c.put(e.request, copy); } catch (err) { } });
+        return res;
+      }).catch(function () {
+        return caches.match('./index.html');
+      })
+    );
+    return;
+  }
+
   e.respondWith(
     caches.match(e.request, { ignoreSearch: true }).then(function (hit) {
       if (hit) return hit;

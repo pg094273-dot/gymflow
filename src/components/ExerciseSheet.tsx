@@ -1,6 +1,7 @@
 import React from 'react';
 import { Exercise } from '../types';
 import { EQUIP, getGroupById } from '../data/exercises';
+import { TECHNIQUE } from '../data/technique';
 import { ExerciseMotionViewer } from './ExerciseMotionViewer';
 import { useStore } from '../context/StoreContext';
 
@@ -69,6 +70,18 @@ export const ExerciseSheet: React.FC<ExerciseSheetProps> = ({ exercise, onClose 
         <p className="small" style={{ marginTop: '14px', color: '#cfdae8' }}>
           {exercise.d}
         </p>
+
+        {/* Step-by-step execution */}
+        {TECHNIQUE[exercise.id] && (
+          <div className="card" style={{ marginTop: '12px' }}>
+            <h3 style={{ fontSize: '14px' }}>Cómo se hace</h3>
+            <ol className="steps numbered" style={{ marginTop: '8px' }}>
+              {TECHNIQUE[exercise.id].map((step, idx) => (
+                <li key={idx}>{step}</li>
+              ))}
+            </ol>
+          </div>
+        )}
 
         {/* Execution Keys */}
         {exercise.k && exercise.k.length > 0 && (

@@ -2,7 +2,7 @@ import React from 'react';
 import { Routine } from '../types';
 import { EXERCISES_BY_ID, getGroupById } from '../data/exercises';
 import { balanceReport } from '../services/generator';
-import { Figure } from './Figure';
+import { ExercisePhoto } from './ExercisePhoto';
 import { useStore } from '../context/StoreContext';
 
 interface PrintAreaProps {
@@ -135,7 +135,7 @@ export const PrintArea: React.FC<PrintAreaProps> = ({ routine }) => {
                     <td>
                       <div className="pdf-ex">
                         <div style={{ width: '22mm', height: '22mm' }}>
-                          <Figure patternId={ex.p} />
+                          <ExercisePhoto exerciseId={ex.id} patternId={ex.p} className="ex-img pdf-img" eager />
                         </div>
                         <div>
                           <div className="n">{ex.n}</div>

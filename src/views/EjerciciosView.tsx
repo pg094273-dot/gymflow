@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { GROUPS, EXERCISES, EXERCISES_BY_GROUP, EQUIP } from '../data/exercises';
-import { Figure } from '../components/Figure';
+import { ExercisePhoto } from '../components/ExercisePhoto';
 import { Icon } from '../components/Icons';
 import { ExerciseSheet } from '../components/ExerciseSheet';
 import { Exercise } from '../types';
@@ -88,7 +88,7 @@ export const EjerciciosView: React.FC = () => {
                   style={{ cursor: 'pointer' }}
                 >
                   <div className="ex-thumb">
-                    <Figure patternId={ex.p} />
+                    <ExercisePhoto exerciseId={ex.id} patternId={ex.p} className="ex-img" />
                   </div>
                   <div className="ex-name">
                     <div className="n">{ex.n}</div>

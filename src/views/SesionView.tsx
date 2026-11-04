@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useStore, todayISO, uid } from '../context/StoreContext';
 import { EXERCISES_BY_ID, getGroupById } from '../data/exercises';
-import { Figure } from '../components/Figure';
+import { ExercisePhoto } from '../components/ExercisePhoto';
 import { Icon } from '../components/Icons';
 import { ExerciseSheet } from '../components/ExerciseSheet';
 import { Exercise, SessionEntry } from '../types';
@@ -225,7 +225,7 @@ export const SesionView: React.FC<SesionViewProps> = ({
                 onClick={() => setSelectedExercise(ex)}
                 style={{ cursor: 'pointer' }}
               >
-                <Figure patternId={ex.p} />
+                <ExercisePhoto exerciseId={ex.id} patternId={ex.p} className="ex-img" />
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontWeight: 700, fontSize: '15px', lineHeight: 1.25 }}>

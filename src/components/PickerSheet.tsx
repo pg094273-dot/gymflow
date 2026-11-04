@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Exercise } from '../types';
 import { GROUPS, EXERCISES_BY_GROUP } from '../data/exercises';
-import { Figure } from './Figure';
+import { ExercisePhoto } from './ExercisePhoto';
 
 interface PickerSheetProps {
   isOpen: boolean;
@@ -87,7 +87,7 @@ export const PickerSheet: React.FC<PickerSheetProps> = ({
                     style={{ cursor: 'pointer' }}
                   >
                     <div className="ex-thumb" style={{ width: '44px', height: '44px' }}>
-                      <Figure patternId={ex.p} />
+                      <ExercisePhoto exerciseId={ex.id} patternId={ex.p} className="ex-img" />
                     </div>
                     <div className="ex-name">
                       <div className="n" style={{ fontSize: '13.5px' }}>

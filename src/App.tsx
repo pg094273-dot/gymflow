@@ -6,6 +6,7 @@ import { Tabbar } from './components/Tabbar';
 import { Toast } from './components/Toast';
 import { RestBar } from './components/RestBar';
 import { PrintArea } from './components/PrintArea';
+import { preloadExercisePhotos } from './components/ExercisePhoto';
 import { GeneratorModal } from './components/GeneratorModal';
 import { HoyView } from './views/HoyView';
 import { RutinasView } from './views/RutinasView';
@@ -104,9 +105,12 @@ export const App: React.FC = () => {
       return;
     }
     setPrintRoutine(target);
-    setTimeout(() => {
-      window.print();
-    }, 100);
+    const ids = target.days.flatMap((d) => d.exercises.map((e) => e.exId));
+    preloadExercisePhotos(ids).then(() => {
+      window.setTimeout(() => {
+        window.print();
+      }, 120);
+    });
   };
 
   // Current tab

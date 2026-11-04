@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useStore, uid } from '../context/StoreContext';
 import { GROUPS, EXERCISES_BY_ID, EXERCISES_BY_GROUP, getGroupById } from '../data/exercises';
-import { Figure } from '../components/Figure';
+import { ExercisePhoto } from '../components/ExercisePhoto';
 import { PickerSheet } from '../components/PickerSheet';
 import { ExerciseSheet } from '../components/ExerciseSheet';
 import { Routine, RoutineDay, Exercise } from '../types';
@@ -278,7 +278,7 @@ export const EditorView: React.FC<EditorViewProps> = ({
                         style={{ width: '46px', height: '46px', cursor: 'pointer' }}
                         onClick={() => setSelectedExercise(ex)}
                       >
-                        <Figure patternId={ex.p} />
+                        <ExercisePhoto exerciseId={ex.id} patternId={ex.p} className="ex-img" />
                       </div>
                       <div className="ex-name">
                         <div className="n" style={{ fontSize: '13.5px' }}>
